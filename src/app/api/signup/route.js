@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import User from "@/models/usermodel";
 import connect from "@/lib/dbconn";
 import bcryptjs from "bcryptjs";
+import { sendEmail } from "@/app/helpers/mailer";
 
 
 export async function POST(request) {
@@ -22,13 +23,24 @@ export async function POST(request) {
     const hashedPassword = await bcryptjs.hash(password, 10);
 
     // Create a new user and save it to the database
-    await User.create({
+     const saveduser = await User.create({
       username,
       email,
       password: hashedPassword,
     });
 
+    console.log(saveduser);
+    //send verification email
   
+    if(saveduser)
+    {
+      await sendEmail(email ,"VERIFY" ,saveduser._id)
+
+    }
+    else{
+console.log("no VERIFICATION POSSIBLE !");
+    }
+    
 
       return NextResponse.json(
         { message: "User registered successfully" },
